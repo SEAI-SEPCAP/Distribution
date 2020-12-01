@@ -1,3 +1,5 @@
+//SEAI - Distribution 
+//Servos using Arduino Functions
 #include <Arduino.h>
 #include <Servo.h>
 
