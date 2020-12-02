@@ -52,8 +52,8 @@ void loop() {
     else if(data_rcvd == '6') selected_servo = 6; 
     else if(data_rcvd == '7') selected_servo = 7; 
     else selected_servo = 0; 
-  }
-  switch (selected_servo) {
+
+    switch (selected_servo) {
     case 1:
         for(angle = 0; angle <= 100; angle = angle+10)  
         {                                  
@@ -163,6 +163,7 @@ void loop() {
    
     default:
       break;
+  }
   }
 
 }
