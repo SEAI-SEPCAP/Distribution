@@ -15,6 +15,7 @@ Servo servo7;
 
 int angle = 0; 
 int selected_servo = 0; 
+char data_rcvd; 
 
 void setup() {
   // put your setup code here, to run once:
@@ -33,11 +34,25 @@ void setup() {
   servo5.write(angle);
   servo6.write(angle);
   servo7.write(angle);
+
+  Serial.begin(9600);       // initialize UART with baud rate of 9600 bps
+
 }
 
 void loop() {
-  selected_servo ++; 
-  delay(3000);
+
+  if(Serial.available()) { // wait for buffer to be available
+    data_rcvd = Serial.read();   // read one byte from serial buffer and save to data_rcvd
+
+    if(data_rcvd == '1') selected_servo = 1; 
+    else if(data_rcvd == '2') selected_servo = 2; 
+    else if(data_rcvd == '3') selected_servo = 3; 
+    else if(data_rcvd == '4') selected_servo = 4; 
+    else if(data_rcvd == '5') selected_servo = 5; 
+    else if(data_rcvd == '6') selected_servo = 6; 
+    else if(data_rcvd == '7') selected_servo = 7; 
+    else selected_servo = 0; 
+  }
   switch (selected_servo) {
     case 1:
         for(angle = 0; angle <= 100; angle = angle+10)  
