@@ -13,7 +13,6 @@ Servo servo5;
 Servo servo6;
 Servo servo7;
 
-
 int angle = 0; 
 uint8_t selected_servo = 0; 
 uint8_t addr; 
@@ -46,8 +45,8 @@ void loop() {
 
   if(Serial.available() >= 2) { // wait for buffer to have data
 
-    aux = Serial.read() << 8; //read MSB (ADDR) from serial buffer
-    addr = aux >> 4;  //read MSB (ADDR) from serial buffer
+    aux = Serial.read() >> 8; //read MSB (ADDR) from serial buffer
+    addr = aux >> 4; //read MSB (ADDR) from serial buffer
     selected_servo = Serial.read();  //read LSB (DATA) from serial buffer
 
     if(addr == 0x03){ //message is to Distribution
