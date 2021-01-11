@@ -5,20 +5,10 @@
 
 #define FCPU 16000000ul
 
-Servo servo1;
-Servo servo2;
-Servo servo3;
-Servo servo4;
-Servo servo5;
-Servo servo6;
-Servo servo7;
-
 int angle = 0; 
 uint8_t selected_servo = 0; 
 uint8_t addr; 
 uint8_t aux; 
-
-
 
 void setup() {
 
