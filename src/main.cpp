@@ -6,22 +6,29 @@
 #define FCPU 16000000ul
 
 #define PWMTOP 39999   // TIMER1 TOP for PRESC=8
-#define MAX  90
-#define ZERO  20
-#define ZERO06 100
-#define MAX06 30 
-#define ZERO07 120 
-#define MAX07 50
 #define P_FCLK 2000 // (16M/1000)/8
 
-int angle = 0; 
+
+#define MAX1 1500 // aberto
+#define ZERO1 2800 
+#define MAX3 1400 // aberto
+#define ZERO3 2800 
+#define MAX2 1600
+#define ZERO2 2800
+#define MAX4 1700
+#define ZERO4 2800
+#define MAX5 1900
+#define ZERO5 3100
+#define MAX6 2700
+#define ZERO6 3700
+#define MAX7 1800
+#define ZERO7 3400
+
+
+double angle = 0; 
 uint8_t selected_servo = 0; 
 uint8_t addr; 
 uint8_t aux; 
-
-int getangle(int angle){
-  return angle/180 * 2000 + 2000; 
-}
 
 void setup_servos(){
 
@@ -38,30 +45,37 @@ void setup_servos(){
 
 void setup_timer_servos() {
 
-  //Fast PWM (TOP: ICR3, Update on BOTTOM, TOV3 Flag on TOP)
-  TCNT3 = 0; 
-  ICR3 = PWMTOP;  // TOP count for timer1 -> FPWM = FOSC/(N*(1+TOP)) with
-                 // FPWM=50 and N=8
-  TCCR3A |= (1 << WGM31) | (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1); //Clear OC3A/B/C on Compare Match, set OC3A/B/C at BOTTOM (non-inverting mode)
-	TCCR3B |= (1 << WGM32) | (1 << WGM33) | (1 << CS31); // Preesc = 8
+  TCNT1 = 0;     // Set timer1 count zero
+  ICR1 = PWMTOP; // TOP count for timer1 -> FPWM = FOSC/(N*(1+TOP)) with
+                  // FPWM=50 and N=8
+  TCCR1A = _BV(COM1A1) | (0 << COM1A0);            // Non inverter PWM
+  TCCR1A |= _BV(WGM11) | (0 << WGM10);             // Fast PWM: TOP: ICR1
+  TCCR1B = _BV(WGM13) | _BV(WGM12);                // Fast PWM: TOP: ICR1
+  TCCR1B |= (0 << CS12) | _BV(CS11) | (0 << CS10); // Preesc = 8
 
-  TCNT4 = 0; 
-  ICR4 = PWMTOP;
-  TCCR4A |= (1 << WGM41) | (1 << COM4A1) | (1 << COM4B1) | (1 << COM4C1); 
-	TCCR4B |= (1 << WGM42) | (1 << WGM43) | (1 << CS41); 
+  TCNT3 = 0;     // Set timer1 count zero
+  ICR3 = PWMTOP; // TOP count for timer1 -> FPWM = FOSC/(N*(1+TOP)) with
+                  // FPWM=50 and N=8
+  TCCR3A = _BV(COM3B1) | _BV(COM3C1)| _BV(COM3A1) | (0 << COM3A0);            // Non inverter PWM
+  TCCR3A |= _BV(WGM31) | (0 << WGM30);             // Fast PWM: TOP: ICR1
+  TCCR3B = _BV(WGM33) | _BV(WGM32);                // Fast PWM: TOP: ICR1
+  TCCR3B |= (0 << CS32) | _BV(CS31) | (0 << CS30); // Preesc = 8
 
-  TCNT1 = 0; 
-  ICR1 = PWMTOP;
-  TCCR1A |= (1 << WGM11) | (1 << COM1A1); 
-	TCCR1B |= (1 << WGM12) | (1 << WGM13) | (1 << CS11); 
+  TCNT4 = 0;     // Set timer1 count zero
+  ICR4 = PWMTOP; // TOP count for timer1 -> FPWM = FOSC/(N*(1+TOP)) with
+                  // FPWM=50 and N=8
+  TCCR4A = _BV(COM4B1) | _BV(COM4C1)| _BV(COM4A1) | (0 << COM4A0);            // Non inverter PWM
+  TCCR4A |= _BV(WGM41) | (0 << WGM40);             // Fast PWM: TOP: ICR1
+  TCCR4B = _BV(WGM43) | _BV(WGM42);                // Fast PWM: TOP: ICR1
+  TCCR4B |= (0 << CS42) | _BV(CS41) | (0 << CS40); // Preesc = 8
 
-  OCR1A = ZERO;
-  OCR3A = ZERO;
-  OCR3B = ZERO;
-  OCR3C = ZERO;
-  OCR4A = ZERO;
-  OCR4B = ZERO06;
-  OCR4C = ZERO07;
+  OCR3B = ZERO1;
+  OCR3C = ZERO2;
+  OCR1A = ZERO3;
+  OCR3A = ZERO4;
+  OCR4A = ZERO5;
+  OCR4B = ZERO6;
+  OCR4C = ZERO7;
 
 }
 
@@ -73,72 +87,82 @@ void setup(){
  
   setup_servos();
   setup_timer_servos();
-  setup_uart();
+  //setup_uart();
+   selected_servo = 1; 
 
 }
 
 void loop() {
 
-  if(Serial.available() >= 2) { // wait for buffer to have data
+ /* if(Serial.available() >= 2) { // wait for buffer to have data
 
     aux = Serial.read() >> 8; //read MSB (ADDR) from serial buffer
     addr = aux >> 4; //read MSB (ADDR) from serial buffer
-    selected_servo = Serial.read();  //read LSB (DATA) from serial buffer
+    selected_servo = Serial.read();  //read LSB (DATA) from serial buffer*/
 
-    if(addr == 0x03){ //message is to Distribution
-      switch (selected_servo) {
+   // if(addr == 0x03){ //message is to Distribution
+    switch (selected_servo) {
         case 1:
-          OCR3B = getangle(MAX);
-          delay(400);
-          // now scan back from 180 to 0 degrees
-          OCR3B = getangle(ZERO);
+          delay(800);
+          OCR3B = MAX1;
+          delay(800);
+          OCR3B = ZERO1;
           break;
         
         case 2:
-          OCR3C = getangle(MAX);
-          delay(400);
+          delay(800);
+          OCR3C = MAX2;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR3C = getangle(ZERO);
+          OCR3C = ZERO2;
           break;
 
         case 3:
-          OCR1A = getangle(MAX);
-          delay(400);
+          delay(800);
+          OCR1A = MAX3;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR1A = getangle(ZERO);
+          OCR1A = ZERO3;
           break;
 
         case 4:
-          OCR3A = getangle(MAX);
-          delay(400);
+          delay(800);
+          OCR3A = MAX4;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR3A = getangle(ZERO);
+          OCR3A = ZERO4;
           break;
 
         case 5:
-          OCR4A = getangle(MAX);
-          delay(400);
+          delay(800);
+          OCR4A = MAX5;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR4B = getangle(ZERO);
+          OCR4A = ZERO5;
           break; 
 
         case 6:
-          OCR4B = getangle(MAX06);
-          delay(400);
+          delay(800);
+          OCR4B = MAX6;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR4B = getangle(ZERO06);
+          OCR4B = ZERO6;
           break;
 
         case 7:
-          OCR4C = getangle(MAX07);
-          delay(400);
+          delay(800);
+          OCR4C = MAX7;
+          delay(800);
           // now scan back from 180 to 0 degrees
-          OCR4C = getangle(ZERO07);
+          OCR4C = ZERO7;
           break;
-      
+
         default:
           break;
+
       }
-    }  
-  }
+
+    selected_servo ++;
+   // }  
+  //}
 }
