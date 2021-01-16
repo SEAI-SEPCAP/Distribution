@@ -111,6 +111,13 @@ void receive_Data(){
 
 }
 
+void send_Data(uint8_t Data){
+  
+  while(!(UCSR0A & (1<<UDRE0))); // Wait until the buffer is empty
+  UDR0 = Data;                   // Copy to UDR0 the correspondent data
+  
+}
+
 void loop() {
 
   receive_Data();
