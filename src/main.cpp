@@ -34,9 +34,9 @@ void setup_servos(){
     // SERVO as OUT
   DDRE |= 1 << PINE4; //Digital Pin 2, OC3B
   DDRE |= 1 << PINE5; //Digital Pin 3, OC3C
-  DDRB |= 1 << PINB5; //Digital Pin 11, OC1A 
+  DDRB |= 1 << PINB6; //Digital Pin 12, OC1B 
   DDRE |= 1 << PINE3; //Digital Pin 5, OC3A
-  DDRH |= 1 << PINH3; //Digital Pin 6, OC4A
+  DDRH |= 1 << PINH3; //Digital Pin 6, OC4A`
   DDRH |= 1 << PINH4; //Digital Pin 7, OC4B
   DDRH |= 1 << PINH5; //Digital Pin 8, OC4C
 
@@ -47,7 +47,7 @@ void setup_timer_servos() {
   TCNT1 = 0;     // Set timer1 count zero
   ICR1 = PWMTOP; // TOP count for timer1 -> FPWM = FOSC/(N*(1+TOP)) with
                   // FPWM=50 and N=8
-  TCCR1A = _BV(COM1A1) | (0 << COM1A0);            // Non inverter PWM
+  TCCR1A = _BV(COM1A1) | _BV(COM1B1) | (0 << COM1A0);            // Non inverter PWM
   TCCR1A |= _BV(WGM11) | (0 << WGM10);             // Fast PWM: TOP: ICR1
   TCCR1B = _BV(WGM13) | _BV(WGM12);                // Fast PWM: TOP: ICR1
   TCCR1B |= (0 << CS12) | _BV(CS11) | (0 << CS10); // Preesc = 8
@@ -70,7 +70,7 @@ void setup_timer_servos() {
 
   OCR3B = ZERO1;
   OCR3C = ZERO2;
-  OCR1A = ZERO3;
+  OCR1B = ZERO3;
   OCR3A = ZERO4;
   OCR4A = ZERO5;
   OCR4B = ZERO6;
@@ -115,7 +115,7 @@ void send_Data(uint8_t Data){
   
   while(!(UCSR0A & (1<<UDRE0))); // Wait until the buffer is empty
   UDR0 = Data;                   // Copy to UDR0 the correspondent data
-  
+
 }
 
 void loop() {
@@ -141,10 +141,10 @@ void loop() {
 
       case 3:
         delay(800);
-        OCR1A = MAX3;
+        OCR1B = MAX3;
         delay(800);
         // now scan back from 180 to 0 degrees
-        OCR1A = ZERO3;
+        OCR1B = ZERO3;
         break;
 
       case 4:
