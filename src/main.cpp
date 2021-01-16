@@ -2,12 +2,12 @@
 //Servos using Arduino Functions
 #include <Arduino.h>
 #include <Servo.h>
+#include <avr/io.h>
 
 #define FCPU 16000000ul
 
 #define PWMTOP 39999   // TIMER1 TOP for PRESC=8
 #define P_FCLK 2000 // (16M/1000)/8
-
 
 #define MAX1 1500 // aberto
 #define ZERO1 2800 
@@ -23,7 +23,6 @@
 #define ZERO6 3700
 #define MAX7 1800
 #define ZERO7 3400
-
 
 double angle = 0; 
 uint8_t selected_servo = 0; 
@@ -80,89 +79,105 @@ void setup_timer_servos() {
 }
 
 void setup_uart(){
-  Serial.begin(9600);  // initialize UART with baud rate of 9600 bps
+
+  /* Set baud rate */
+  long BAUD = 9600;
+  int UBBR_VAL = 16000000/(BAUD*16)-1;
+  UBRR0H = (uint8_t) UBBR_VAL>>8; // Define Baudrate
+  UBRR0L = (uint8_t) UBBR_VAL;
+
+  UCSR0C |= (3<<UCSZ01);  // 8 Data bits configuration
+  UCSR0C |= (0<<USBS0);   // 1 stop bit
+  UCSR0B |= (1<<RXEN0) | (1<<TXEN0); // Activate Rx, Tx 
+ 
 }
 
 void setup(){
  
   setup_servos();
   setup_timer_servos();
-  //setup_uart();
-   selected_servo = 1; 
+  setup_uart();
+  selected_servo = 1; 
+
+}
+
+void receive_Data(){
+  
+  while(!(UCSR0A & (1<<RXC0))); // Waits until has new data to be read
+  aux = UDR0;                   // Saves the data to be analised below
+  addr = aux >> 4;              //read MSB (ADDR) from serial buffer
+  while(!(UCSR0A & (1<<RXC0))); // Waits until has new data to be read
+  selected_servo = UDR0;        // Saves the data to be analised below
 
 }
 
 void loop() {
 
- /* if(Serial.available() >= 2) { // wait for buffer to have data
+  receive_Data();
 
-    aux = Serial.read() >> 8; //read MSB (ADDR) from serial buffer
-    addr = aux >> 4; //read MSB (ADDR) from serial buffer
-    selected_servo = Serial.read();  //read LSB (DATA) from serial buffer*/
+  if(addr == 0x03){ //message is to Distribution
+  switch (selected_servo) {
+      case 1:
+        delay(800);
+        OCR3B = MAX1;
+        delay(800);
+        OCR3B = ZERO1;
+        break;
+      
+      case 2:
+        delay(800);
+        OCR3C = MAX2;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR3C = ZERO2;
+        break;
 
-   // if(addr == 0x03){ //message is to Distribution
-    switch (selected_servo) {
-        case 1:
-          delay(800);
-          OCR3B = MAX1;
-          delay(800);
-          OCR3B = ZERO1;
-          break;
-        
-        case 2:
-          delay(800);
-          OCR3C = MAX2;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR3C = ZERO2;
-          break;
+      case 3:
+        delay(800);
+        OCR1A = MAX3;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR1A = ZERO3;
+        break;
 
-        case 3:
-          delay(800);
-          OCR1A = MAX3;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR1A = ZERO3;
-          break;
+      case 4:
+        delay(800);
+        OCR3A = MAX4;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR3A = ZERO4;
+        break;
 
-        case 4:
-          delay(800);
-          OCR3A = MAX4;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR3A = ZERO4;
-          break;
+      case 5:
+        delay(800);
+        OCR4A = MAX5;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR4A = ZERO5;
+        break; 
 
-        case 5:
-          delay(800);
-          OCR4A = MAX5;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR4A = ZERO5;
-          break; 
+      case 6:
+        delay(800);
+        OCR4B = MAX6;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR4B = ZERO6;
+        break;
 
-        case 6:
-          delay(800);
-          OCR4B = MAX6;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR4B = ZERO6;
-          break;
+      case 7:
+        delay(800);
+        OCR4C = MAX7;
+        delay(800);
+        // now scan back from 180 to 0 degrees
+        OCR4C = ZERO7;
+        break;
 
-        case 7:
-          delay(800);
-          OCR4C = MAX7;
-          delay(800);
-          // now scan back from 180 to 0 degrees
-          OCR4C = ZERO7;
-          break;
+      default:
+        break;
 
-        default:
-          break;
+    }
 
-      }
+  selected_servo ++;
+  }  
 
-    selected_servo ++;
-   // }  
-  //}
 }
